@@ -10,6 +10,7 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "pretest": "npm run compile",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "prepare": "npm run compile"
   },
   "author": "MultiversX",
