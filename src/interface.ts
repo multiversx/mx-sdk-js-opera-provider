@@ -13,11 +13,6 @@ export interface ITransaction {
   applySignature(signature: ISignature, signedBy: IAddress): void;
 }
 
-export interface IMessage {
-  data: Uint8Array;
-  signature?: Uint8Array;
-}
-
 export interface IProviderAccount {
   address: string;
   name?: string;
