@@ -1,4 +1,4 @@
-import type {Message} from "@multiversx/sdk-core/out/message";
+import type { SignableMessage } from "@multiversx/sdk-core/out";
 
 export interface ISignature {
   hex(): string;
@@ -37,5 +37,5 @@ export interface MultiversxOperaProvider {
   isConnected?(): boolean;
   signTransaction<T extends ITransaction>(transaction: T): Promise<T>;
   signTransactions<T extends ITransaction>(transactions: T[]): Promise<T[]>;
-  signMessage<T extends Message>(message: T): Promise<T>;
+  signMessage<T extends SignableMessage>(message: T): Promise<T>;
 }
