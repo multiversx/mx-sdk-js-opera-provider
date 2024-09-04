@@ -7,7 +7,7 @@ import {
   ErrAccountNotConnected,
   ErrCannotSignSingleTransaction,
 } from "./errors";
-import type { Message } from "@multiversx/sdk-core/out/message";
+import { Message } from "@multiversx/sdk-core/out/message";
 
 declare global {
   interface Window {
@@ -132,7 +132,10 @@ export class OperaProvider {
   async signMessage(messageToSign: string): Promise<Message> {
     try {
       this.ensureConnected();
-      return await window.elrond.signMessage(messageToSign);
+      const message = new Message({
+        data: Buffer.from(messageToSign)
+      });
+      return await window.elrond.signMessage(message);
     } catch (error) {
       throw error;
     }

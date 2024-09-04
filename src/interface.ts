@@ -13,6 +13,11 @@ export interface ITransaction {
   applySignature(signature: ISignature, signedBy: IAddress): void;
 }
 
+export interface IMessage {
+  data: Uint8Array;
+  signature?: Uint8Array;
+}
+
 export interface IProviderAccount {
   address: string;
   name?: string;
@@ -32,5 +37,5 @@ export interface MultiversxOperaProvider {
   isConnected?(): boolean;
   signTransaction<T extends ITransaction>(transaction: T): Promise<T>;
   signTransactions<T extends ITransaction>(transactions: T[]): Promise<T[]>;
-  signMessage(messageToSign: string): Promise<Message>;
+  signMessage<T extends Message>(message: T): Promise<T>;
 }
