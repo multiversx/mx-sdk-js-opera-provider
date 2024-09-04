@@ -60,10 +60,14 @@ export class OperaProvider {
       throw new Error("Opera provider is not initialised, call init() first");
     }
     try {
-      this.account = await window.elrond.login?.({token}) ?? { address: "" };
+      const address = await window.elrond.login(token);
+      this.account = {
+        address
+      }
     } catch (error: any) {
       throw error;
     }
+
     return this.account;
   }
 

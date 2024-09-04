@@ -28,7 +28,7 @@ export interface MultiversxOperaProvider {
   account: IProviderAccount;
   /*static getInstance(): Elrond | undefined */
   init(): Promise<boolean>;
-  login?(options?: {token?: string}): Promise<IProviderAccount | null>;
+  login(token?: string): Promise<string>;
   logout(): Promise<boolean>;
   getAddress(): Promise<string>;
   getAccount(): IProviderAccount | null;
