@@ -1,3 +1,5 @@
+import type {Message} from "@multiversx/sdk-core/out/message";
+
 export interface ISignature {
   hex(): string;
 }
@@ -11,27 +13,24 @@ export interface ITransaction {
   applySignature(signature: ISignature, signedBy: IAddress): void;
 }
 
-export interface ISignableMessage {
-  message: Buffer;
-  applySignature(signature: ISignature, signedBy: IAddress): void;
-}
-
-export interface IOperaWalletAccount {
+export interface IProviderAccount {
   address: string;
   name?: string;
   signature?: string;
 }
 
 export interface MultiversxOperaProvider {
-  account: IOperaWalletAccount;
+  account: IProviderAccount;
   /*static getInstance(): Elrond | undefined */
   init(): Promise<boolean>;
-  login(token?: string): Promise<string>;
+  login?(options?: {token?: string}): Promise<IProviderAccount | null>;
   logout(): Promise<boolean>;
   getAddress(): Promise<string>;
+  getAccount(): IProviderAccount | null;
+  setAccount(account: IProviderAccount): void;
   isInitialized(): boolean;
-  isConnected(): boolean;
+  isConnected?(): boolean;
   signTransaction<T extends ITransaction>(transaction: T): Promise<T>;
   signTransactions<T extends ITransaction>(transactions: T[]): Promise<T[]>;
-  signMessage<T extends ISignableMessage>(message: T): Promise<T>;
+  signMessage(messageToSign: string): Promise<Message>;
 }

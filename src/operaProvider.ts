@@ -1,15 +1,13 @@
 import {
-  IOperaWalletAccount,
-  ISignableMessage,
+  IProviderAccount,
   ITransaction,
   MultiversxOperaProvider,
 } from "./interface";
-import { Address, Signature } from "./primitives";
-import { Operation } from "./operation";
 import {
   ErrAccountNotConnected,
   ErrCannotSignSingleTransaction,
 } from "./errors";
+import type { Message } from "@multiversx/sdk-core/out/message";
 
 declare global {
   interface Window {
@@ -19,7 +17,7 @@ declare global {
 }
 
 export class OperaProvider {
-  public account: IOperaWalletAccount = { address: "" };
+  public account: IProviderAccount = { address: "" };
   private initialized: boolean = false;
   private static _instance: OperaProvider = new OperaProvider();
 
@@ -57,16 +55,16 @@ export class OperaProvider {
   }: {
     callbackUrl?: string;
     token?: string;
-  } = {}): Promise<string> {
+  } = {}): Promise<IProviderAccount> {
     if (!this.initialized) {
       throw new Error("Opera provider is not initialised, call init() first");
     }
     try {
-      this.account.address = await window.elrond.login(token);
+      this.account = await window.elrond.login?.({token}) ?? { address: "" };
     } catch (error: any) {
       throw error;
     }
-    return this.account.address;
+    return this.account;
   }
 
   async logout(): Promise<boolean> {
@@ -102,6 +100,14 @@ export class OperaProvider {
     return Boolean(this.account.address);
   }
 
+  getAccount(): IProviderAccount | null {
+    return this.account;
+  }
+
+  setAccount(account: IProviderAccount): void {
+    this.account = account;
+  }
+
   async signTransaction<T extends ITransaction>(transaction: T): Promise<T> {
     const signedTransactions = await this.signTransactions([transaction]);
 
@@ -123,10 +129,10 @@ export class OperaProvider {
     }
   }
 
-  async signMessage<T extends ISignableMessage>(message: T): Promise<T> {
+  async signMessage(messageToSign: string): Promise<Message> {
     try {
       this.ensureConnected();
-      return await window.elrond.signMessage(message);
+      return await window.elrond.signMessage(messageToSign);
     } catch (error) {
       throw error;
     }
