@@ -8,7 +8,7 @@ import {
   ErrCannotSignSingleTransaction,
 } from "./errors";
 import { Message } from "@multiversx/sdk-core/out/message";
-import {SignableMessage} from "@multiversx/sdk-core/out";
+import {Address, SignableMessage} from "@multiversx/sdk-core/out";
 
 declare global {
   interface Window {
@@ -134,18 +134,23 @@ export class OperaProvider {
     }
   }
 
-  async signMessage(messageToSign: string): Promise<Message> {
+  async signMessage(messageToSign: Message): Promise<Message> {
     try {
       this.ensureConnected();
+      // Still used SignableMessage to keep the compatibility with the current opera method implementation
       const message = new SignableMessage({
-        message: Buffer.from(messageToSign)
+        message: Buffer.from(messageToSign.data),
       });
       const signedMessage = await window.elrond.signMessage(message);
 
       return new Message({
-        data: Buffer.from(messageToSign),
+        data: Buffer.from(messageToSign.data),
+        address:
+            messageToSign.address ?? Address.fromBech32(this.account.address),
+        signer: 'opera',
+        version: messageToSign.version,
         signature: signedMessage.getSignature()
-      })
+      });
     } catch (error) {
       throw error;
     }
