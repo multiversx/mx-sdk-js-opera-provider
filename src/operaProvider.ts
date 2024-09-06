@@ -1,15 +1,14 @@
 import {
-  IOperaWalletAccount,
-  ISignableMessage,
+  IProviderAccount,
   ITransaction,
   MultiversxOperaProvider,
 } from "./interface";
-import { Address, Signature } from "./primitives";
-import { Operation } from "./operation";
 import {
   ErrAccountNotConnected,
   ErrCannotSignSingleTransaction,
 } from "./errors";
+import { Message } from "@multiversx/sdk-core/out/message";
+import {Address, SignableMessage} from "@multiversx/sdk-core/out";
 
 declare global {
   interface Window {
@@ -19,7 +18,7 @@ declare global {
 }
 
 export class OperaProvider {
-  public account: IOperaWalletAccount = { address: "" };
+  public account: IProviderAccount = { address: "" };
   private initialized: boolean = false;
   private static _instance: OperaProvider = new OperaProvider();
 
@@ -57,16 +56,20 @@ export class OperaProvider {
   }: {
     callbackUrl?: string;
     token?: string;
-  } = {}): Promise<string> {
+  } = {}): Promise<IProviderAccount> {
     if (!this.initialized) {
       throw new Error("Opera provider is not initialised, call init() first");
     }
     try {
-      this.account.address = await window.elrond.login(token);
+      const address = await window.elrond.login(token);
+      this.account = {
+        address
+      }
     } catch (error: any) {
       throw error;
     }
-    return this.account.address;
+
+    return this.account;
   }
 
   async logout(): Promise<boolean> {
@@ -102,6 +105,14 @@ export class OperaProvider {
     return Boolean(this.account.address);
   }
 
+  getAccount(): IProviderAccount | null {
+    return this.account;
+  }
+
+  setAccount(account: IProviderAccount): void {
+    this.account = account;
+  }
+
   async signTransaction<T extends ITransaction>(transaction: T): Promise<T> {
     const signedTransactions = await this.signTransactions([transaction]);
 
@@ -123,10 +134,23 @@ export class OperaProvider {
     }
   }
 
-  async signMessage<T extends ISignableMessage>(message: T): Promise<T> {
+  async signMessage(messageToSign: Message): Promise<Message> {
     try {
       this.ensureConnected();
-      return await window.elrond.signMessage(message);
+      // Still used SignableMessage to keep the compatibility with the current opera method implementation
+      const message = new SignableMessage({
+        message: Buffer.from(messageToSign.data),
+      });
+      const signedMessage = await window.elrond.signMessage(message);
+
+      return new Message({
+        data: Buffer.from(messageToSign.data),
+        address:
+            messageToSign.address ?? Address.fromBech32(this.account.address),
+        signer: 'opera',
+        version: messageToSign.version,
+        signature: signedMessage.getSignature()
+      });
     } catch (error) {
       throw error;
     }
